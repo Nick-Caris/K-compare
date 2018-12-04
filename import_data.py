@@ -12,7 +12,7 @@ import numpy as np
    
    Output:
    array        The data converted to an np array
-   '''
+ '''
 
 
 def convertIntoArray(filename, numOfAtt, lineStart, length):
@@ -30,11 +30,22 @@ def convertIntoArray(filename, numOfAtt, lineStart, length):
         return array
 
 
-#
-# Two examples with our data set's
-#
-# print(convertIntoArray('Data/segmentation_data.txt', 19, 6, 210))
-#
-# print(convertIntoArray('Data/segmentation_test.txt', 19, 6, 2100)[0])
-#
-print(convertIntoArray('Data/USCensus1990.data.txt', 69, 2, 8799)[0][1])
+'''
+   This function helps test the row you want to take from USCensus1990.data.txt
+   It prints the first 10 value's and prints the label
+
+   Input:
+   rowNumber     The row number you want to test
+
+   Output:
+   print        The printed row and data
+ '''
+
+
+def testRow(rownNumber):
+    print(convertIntoArray('Data/USCensus1990.data.txt', 69, 2, 10)[:, rownNumber])
+    with open('Data/USCensus1990.data.txt', 'r') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            print(row[rownNumber])
+            break
