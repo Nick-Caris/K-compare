@@ -11,10 +11,10 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-x1 = np.array([3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10])
-x2 = np.array([5,5,6,4,5,6,7,5,6,7,2,2,3,4,2,3,4,2,3,4])
-data = np.column_stack((x1, x2))
-k = 5
+# x1 = np.array([3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10])
+# x2 = np.array([5,5,6,4,5,6,7,5,6,7,2,2,3,4,2,3,4,2,3,4])
+# data = np.column_stack((x1, x2))
+# k = 5
 
 def initialize_k_medoids(k, Data):
     medoids = np.empty((k, np.size(Data,1)))
@@ -85,7 +85,7 @@ improve(k, medoids, data, cluster_assignments)
 
 
 
-plt.figure()
-for i in range(0,k):
-    plt.scatter(x1[cluster_assignments == i],x2[cluster_assignments == i])
-plt.show()
+# plt.figure()
+# for i in range(0,k):
+#     plt.scatter(x1[cluster_assignments == i],x2[cluster_assignments == i])
+# plt.show()
