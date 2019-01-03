@@ -28,7 +28,7 @@ def h_k_means(dataa, k=3):
     # To store the value of centroids when it updates
     C_old = np.zeros(C.shape)
     # Cluster Lables(0, 1, 2)
-    clusters = np.zeros(len(X))
+    clusters = np.zeros((len(X), k))
     # Error func. - Distance between new centroids and old centroids
     error = dist(C, C_old, None)
     # set empty array's for finding greatest distance
@@ -39,28 +39,29 @@ def h_k_means(dataa, k=3):
     while error != 0:
         # Assigning each value to its closest cluster
         for i in range(len(X)):
-            distances = dist(X[i], C)
-            cluster = np.argmin(distances)
-            clusters[i] = cluster
-            dist_old = distances
-            for d in range(k):
-                if dist_old[d] > max_dist[d]:
-                    max_dist[d] = dist_old[d]
-                    max_dist_id[d] = int(i)
+            for j in range(k):
+                distances = dist(X[i, j], C)
+                cluster = np.argmin(distances)
+                clusters[i, j] = cluster
+                dist_old = distances
+                for d in range(k):
+                    if dist_old[d] > max_dist[d]:
+                        max_dist[d] = dist_old[d]
+                        max_dist_id[d] = int(i)
 
         # Storing the old centroid values
         C_old = deepcopy(C)
-
         print('MAX Dist', max_dist, 'with ID', max_dist_id)
         new_X = np.empty(shape=(X.shape[0] - 1, X.shape[1]))
         # Create a temp X without the furthest distance points
+        print('shapes', new_X[:, 1].shape, 'And', np.delete(X[:, 1], 15).shape, 'original', X.shape)
         for i in range(k):
             print('erin met ', max_dist_id[i])
             new_X[:, i] = np.delete(X[:, i], max_dist_id[i])
 
         print('compare shape a:', new_X.shape, 'b: ', X.shape)
         for i in range(k):
-            points = [new_X[j] for j in range(len(new_X)) if clusters[j] == i]
+            points = [new_X[j] for j in range(len(new_X)) if clusters[j, i] == i]
             points = np.array(points)
             print('points:', points)
             # Find the mediod of the points
