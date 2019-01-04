@@ -1,15 +1,11 @@
-from copy import deepcopy
+import random
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
-import import_data as toolbox_import
-from sklearn.cluster import KMeans
 import math as m
 
-
-# Euclidean Distance Caculator
-def dist(a, b, ax=1):
-    return np.linalg.norm(a - b, axis=ax)
+x1 = np.array([3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10])
+x2 = np.array([5, 5, 6, 4, 5, 6, 7, 5, 6, 7, 2, 2, 3, 4, 2, 3, 4, 2, 3, 4])
+data = np.column_stack((x1, x2))
+k = 3
 
 
 def euclid_distance(x1, x2):
@@ -19,84 +15,108 @@ def euclid_distance(x1, x2):
     return m.sqrt(y)
 
 
+def initialize_k_medoids(k, Data):
+    medoids = np.empty((k, np.size(Data, 1)))
+    DAta = Data
+    for n in range(k):
+        i = random.randrange(np.size(DAta, 1))
+        for m in range(np.size(Data, 1)):
+            medoids[n, m] = DAta[i, m]
+        DAta = np.delete(DAta, i, 0)
+    return medoids
+
+
+def calculate_medoids(k, Data, medoids):
+    cluster_assignments = cluster(k, Data, medoids)
+    means = np.zeros(shape=(k, data.shape[1]), dtype=object)
+    numbers = np.zeros(shape=k)
+    for i in range(data.shape[0]):
+        for j in range(k):
+            for l in range(data.shape[1]):
+                if j == int(cluster_assignments[i]):
+                    # print('dit', j, 'en dit is gelijk', cluster_assignments[i], 'en dat is bij dataPunt', data[i, :])
+                    means[j, l] = means[j, l] + data[i, l]
+                    numbers[j] = numbers[j] + 1
+
+    for i in range(k):
+        for j in range(data.shape[1]):
+            means[i, j] = (means[i, j] / numbers[i])
+
+    return means
+
+
 def cluster(k, Data, medoids):
     cluster_assignments = np.empty(np.size(Data, 0))
-    clusters = np.empty((k, Data.shape[1]), dtype=np.float32)
-    for i in range(0, np.size(Data, 0)):
-        distance = np.empty(k)
-        for j in range(0, k):
-            x1 = np.empty(np.size(Data, 1))
-            for l in range(0, np.size(Data, 1)):
-                x1[l] = Data[i, l]
+    greatest_dist = np.zeros(k)
+    greatest_dist_id = np.zeros(k)
+    for i in range(np.size(Data, 0)):
+        dist = np.empty(k)
+        for j in range(k):
+            x1 = Data[i, :]
             x2 = medoids[j]
-            distance[j] = euclid_distance(x1, x2)
-        cluster_assignments[i] = np.argmin(distance.sum(axis=0))
+            dist[j] = euclid_distance(x1, x2)
 
-    for i in range(k):
-        clusters[i] = np.argmin(cluster_assignments.sum(axis=0))
+        for j in range(len(greatest_dist)):
+            if dist.argmin() > greatest_dist[j]:
+                greatest_dist[j] = dist.argmin()
+                greatest_dist_id[j] = i
+        cluster_assignments[i] = dist.argmin()
+    return cluster_assignments
 
-    return clusters
+
+def find_greatest_dist(cluster_assignments, Data, medoids):
+    combined_array = np.empty(shape=(data.shape[0], 2), dtype=object)
+    greatest_dist = np.zeros(shape=(k, 2), dtype=float)
+    dist = np.empty(shape=data.shape[0])
+    for i in range(len(combined_array)):
+        combined_array[i] = [cluster_assignments[i], Data[i, :]]
+        x1 = Data[i, :]
+        currentMedoid = int(combined_array[i, 0])
+        x2 = medoids[currentMedoid]
+        dist[i] = euclid_distance(x1, x2)
+
+        if greatest_dist[currentMedoid, 0] <= dist[i]:
+            # print('inserted values', dist[i], 'and: ', i, 'into ', currentMedoid)
+            greatest_dist[currentMedoid] = [float(dist[i]), int(i)]
+
+    # greatest_dist[:, 0] is the distance and greatest_dist[:, 1] is the id where it came from
+    return greatest_dist
 
 
-def h_k_means(dataa, k=3):
-    X = np.array(dataa)
-    C_dimensions = np.empty((k, X.shape[1]), dtype=np.float32)
+def dist(a, b, ax=1):
+    return np.linalg.norm(a - b, axis=ax)
 
-    # coordinates of random centriods
-    for i in range(k):
-        random_cluster = np.random.randint(0, np.max(X), size=X.shape[1])
-        C_dimensions[i] = random_cluster
 
-    C = np.array(list(C_dimensions), dtype=np.float32)
-    print("Initial Centroids")
-    print(C)
+def improve(k, medoids, Data):
+    Data = np.array(Data)
+    cluster_assignments = cluster(k, Data, medoids)
+    old_cluster_assignments = None
+    error = 1
 
-    # To store the value of centroids when it updates
-    C_old = np.zeros(C.shape)
-    # Cluster Lables(0, 1, 2)
-    clusters = np.zeros((len(X), k))
-    # Error func. - Distance between new centroids and old centroids
-    error = dist(C, C_old, None)
-    # set empty array's for finding greatest distance
-    dist_old = np.empty(shape=k)
-    max_dist = np.empty(shape=k)
-    max_dist_id = np.empty(shape=k)
-    # Loop will run till the error becomes zero
     while error != 0:
-        for i in range(len(X)):
-            for j in range(k):
-                distances = dist(X[i, j], C)
-                dist_old = distances
-                for d in range(k):
-                    if dist_old[d] > max_dist[d]:
-                        max_dist[d] = dist_old[d]
-                        max_dist_id[d] = int(i)
+        # Find the greatest distance to calc new medoids
+        greatest_dist = find_greatest_dist(cluster_assignments, Data, medoids)
 
-        # Storing the old centroid values
-        C_old = deepcopy(C)
-        print('MAX Dist', max_dist, 'with ID', max_dist_id)
-        new_X = np.empty(shape=(X.shape[0] - 1, X.shape[1]))
-        # Create a temp X without the furthest distance points
-        print('shapes', new_X[:, 1].shape, 'And', np.delete(X[:, 1], 15).shape, 'original', X.shape)
-        for i in range(k):
-            print('erin met ', max_dist_id[i])
-            new_X[:, i] = np.delete(X[:, i], max_dist_id[i])
+        # Create a new data without the furthest distance points
+        new_data = np.empty(shape=(Data.shape[0] - k, Data.shape[1]))
+        # print('shapes', new_data.shape, 'And', np.delete(Data, [1, 0, 2], 0).shape, 'original', Data.shape)
+        # print('Data ', greatest_dist[:, 0], 'with id', greatest_dist[:, 1])
+        new_data = np.delete(Data, greatest_dist[:, 1], 0)
+        medoids = calculate_medoids(k, Data, medoids)
+        old_cluster_assignments = cluster_assignments
+        cluster_assignments = cluster(k, Data, medoids)
 
-        C = cluster(k, new_X, C)
-        print(C, ' old', C_old)
-        error = dist(C, C_old, None)
+        print(cluster_assignments, ' old', old_cluster_assignments)
+        error = dist(cluster_assignments, old_cluster_assignments, None)
         print('Error', error)
-    return C
+
+    return cluster_assignments
 
 
-raw = toolbox_import.convertIntoArray('Data/USCensus1990.data.txt', 69, 2, 10000)
-
-data = np.empty(shape=(10000, 3))
-
-data[:, 0] = raw[:, 31]
-data[:, 1] = raw[:, 40]
-data[:, 2] = raw[:, 12]
-
-# print(data.shape[1])
-
-print('Eigen cluster', h_k_means(data, 3))
+medoids = initialize_k_medoids(k, data)
+cluster_assignments = cluster(k, data, medoids)
+print(improve(k, medoids, data))
+# print(cluster_assignments)
+# print('shapes', data.shape, cluster_assignments.shape)
+print('medoids', medoids)
+# print('Data: ', data)
