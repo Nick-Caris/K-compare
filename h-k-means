@@ -28,18 +28,18 @@ def initialize_k_medoids(k, Data):
 
 def calculate_medoids(k, Data, medoids):
     cluster_assignments = cluster(k, Data, medoids)
-    means = np.zeros(shape=(k, data.shape[1]), dtype=object)
+    means = np.zeros(shape=(k, Data.shape[1]), dtype=object)
     numbers = np.zeros(shape=k)
-    for i in range(data.shape[0]):
+    for i in range(Data.shape[0]):
         for j in range(k):
-            for l in range(data.shape[1]):
+            for l in range(Data.shape[1]):
                 if j == int(cluster_assignments[i]):
                     # print('dit', j, 'en dit is gelijk', cluster_assignments[i], 'en dat is bij dataPunt', data[i, :])
-                    means[j, l] = means[j, l] + data[i, l]
+                    means[j, l] = means[j, l] + Data[i, l]
                     numbers[j] = numbers[j] + 1
 
     for i in range(k):
-        for j in range(data.shape[1]):
+        for j in range(Data.shape[1]):
             means[i, j] = (means[i, j] / numbers[i])
 
     return means
@@ -47,8 +47,6 @@ def calculate_medoids(k, Data, medoids):
 
 def cluster(k, Data, medoids):
     cluster_assignments = np.empty(np.size(Data, 0))
-    greatest_dist = np.zeros(k)
-    greatest_dist_id = np.zeros(k)
     for i in range(np.size(Data, 0)):
         dist = np.empty(k)
         for j in range(k):
@@ -56,18 +54,14 @@ def cluster(k, Data, medoids):
             x2 = medoids[j]
             dist[j] = euclid_distance(x1, x2)
 
-        for j in range(len(greatest_dist)):
-            if dist.argmin() > greatest_dist[j]:
-                greatest_dist[j] = dist.argmin()
-                greatest_dist_id[j] = i
         cluster_assignments[i] = dist.argmin()
     return cluster_assignments
 
 
 def find_greatest_dist(cluster_assignments, Data, medoids):
-    combined_array = np.empty(shape=(data.shape[0], 2), dtype=object)
+    combined_array = np.empty(shape=(Data.shape[0], 2), dtype=object)
     greatest_dist = np.zeros(shape=(k, 2), dtype=float)
-    dist = np.empty(shape=data.shape[0])
+    dist = np.empty(shape=Data.shape[0])
     for i in range(len(combined_array)):
         combined_array[i] = [cluster_assignments[i], Data[i, :]]
         x1 = Data[i, :]
@@ -87,35 +81,66 @@ def dist(a, b, ax=1):
     return np.linalg.norm(a - b, axis=ax)
 
 
+def cluster_cost(Data, k, medoids, cluster_assignments):
+    price = np.zeros(k)
+    for i in range(0, k):
+        x = Data[cluster_assignments == i, :]
+        for j in range(0, np.size(x, 0)):
+            cost = euclid_distance(x[j, :], medoids[i, :])
+            price[i] += cost
+    return price
+
+
 def improve(k, medoids, Data):
     Data = np.array(Data)
     cluster_assignments = cluster(k, Data, medoids)
-    old_cluster_assignments = None
-    error = 1
+    best_price = 10 ** 23
+    price = cluster_cost(Data, k, medoids, cluster_assignments)
+    old_assignments = np.zeros(shape=cluster_assignments.shape)
 
-    while error != 0:
+    while np.sum(price) < best_price and old_assignments.all() != cluster_assignments.all():
+        old_assigments = cluster_assignments
+        print('old: ', old_assigments, 'current: ', cluster_assignments)
+        print('test if: ', old_assigments.all() != cluster_assignments.all())
         # Find the greatest distance to calc new medoids
         greatest_dist = find_greatest_dist(cluster_assignments, Data, medoids)
-
         # Create a new data without the furthest distance points
         new_data = np.empty(shape=(Data.shape[0] - k, Data.shape[1]))
-        # print('shapes', new_data.shape, 'And', np.delete(Data, [1, 0, 2], 0).shape, 'original', Data.shape)
-        # print('Data ', greatest_dist[:, 0], 'with id', greatest_dist[:, 1])
         new_data = np.delete(Data, greatest_dist[:, 1], 0)
-        medoids = calculate_medoids(k, Data, medoids)
-        old_cluster_assignments = cluster_assignments
-        cluster_assignments = cluster(k, Data, medoids)
 
-        print(cluster_assignments, ' old', old_cluster_assignments)
-        error = dist(cluster_assignments, old_cluster_assignments, None)
-        print('Error', error)
+        for i in range(k):
+            current_data = np.zeros(shape=new_data.shape)
+            for j in range(new_data.shape[0]):
+                if cluster_assignments[j] == i:
+                    current_data[j] = new_data[j]
+                else:
+                    current_data[j] = 0
+            current_data = np.array([x for x in current_data if x.all() != 0.])
+
+            if current_data.all() != 0:
+                for l in range(len(current_data)):
+                    if not (current_data[l, :] == medoids[i, :]).all():
+                        temp = medoids[i, :]
+                        medoids[i, :] = current_data[l, :]
+                        current_data[l, :] = temp
+                        cluster_assignments = cluster(k, Data, medoids)
+                        best_price_prev = best_price
+                        best_price = np.sum(price)
+                        price = cluster_cost(Data, k, medoids, cluster_assignments)
+                    if np.sum(price) > best_price:
+                        temp = medoids[i, :]
+                        medoids[i, :] = current_data[l, :]
+                        current_data[l, :] = temp
+                        price = best_price
+                        best_price = best_price_prev
+            print('sum price: ', np.sum(price), 'best price: ', best_price)
+            print('assigments =', cluster_assignments)
 
     return cluster_assignments
 
 
 medoids = initialize_k_medoids(k, data)
-cluster_assignments = cluster(k, data, medoids)
-print(improve(k, medoids, data))
+print('data: ', improve(k, medoids, data))
 # print(cluster_assignments)
 # print('shapes', data.shape, cluster_assignments.shape)
 print('medoids', medoids)
