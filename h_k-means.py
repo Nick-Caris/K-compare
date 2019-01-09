@@ -1,18 +1,13 @@
 import random
 import numpy as np
 import math as m
+import k_helper as kh
+
 
 x1 = np.array([3, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10])
 x2 = np.array([5, 5, 6, 4, 5, 6, 7, 5, 6, 7, 2, 2, 3, 4, 2, 3, 4, 2, 3, 4])
 data = np.column_stack((x1, x2))
 k = 3
-
-
-def euclid_distance(x1, x2):
-    y = 0
-    for i in range(len(x1)):
-        y += (x1[i] - x2[i]) ** 2
-    return m.sqrt(y)
 
 
 def initialize_k_medoids(k, Data):
@@ -34,7 +29,6 @@ def calculate_medoids(k, Data, medoids):
         for j in range(k):
             for l in range(Data.shape[1]):
                 if j == int(cluster_assignments[i]):
-                    # print('dit', j, 'en dit is gelijk', cluster_assignments[i], 'en dat is bij dataPunt', data[i, :])
                     means[j, l] = means[j, l] + Data[i, l]
                     numbers[j] = numbers[j] + 1
 
@@ -52,7 +46,7 @@ def cluster(k, Data, medoids):
         for j in range(k):
             x1 = Data[i, :]
             x2 = medoids[j]
-            dist[j] = euclid_distance(x1, x2)
+            dist[j] = kh.euclid_distance(x1, x2)
 
         cluster_assignments[i] = dist.argmin()
     return cluster_assignments
@@ -67,10 +61,9 @@ def find_greatest_dist(cluster_assignments, Data, medoids):
         x1 = Data[i, :]
         currentMedoid = int(combined_array[i, 0])
         x2 = medoids[currentMedoid]
-        dist[i] = euclid_distance(x1, x2)
+        dist[i] = kh.euclid_distance(x1, x2)
 
         if greatest_dist[currentMedoid, 0] <= dist[i]:
-            # print('inserted values', dist[i], 'and: ', i, 'into ', currentMedoid)
             greatest_dist[currentMedoid] = [float(dist[i]), int(i)]
 
     # greatest_dist[:, 0] is the distance and greatest_dist[:, 1] is the id where it came from
@@ -86,7 +79,7 @@ def cluster_cost(Data, k, medoids, cluster_assignments):
     for i in range(0, k):
         x = Data[cluster_assignments == i, :]
         for j in range(0, np.size(x, 0)):
-            cost = euclid_distance(x[j, :], medoids[i, :])
+            cost = kh.euclid_distance(x[j, :], medoids[i, :])
             price[i] += cost
     return price
 
@@ -139,9 +132,9 @@ def improve(k, medoids, Data):
     return cluster_assignments
 
 
-medoids = initialize_k_medoids(k, data)
-print('data: ', improve(k, medoids, data))
+# medoids = initialize_k_medoids(k, data)
+# print('data: ', improve(k, medoids, data))
 # print(cluster_assignments)
 # print('shapes', data.shape, cluster_assignments.shape)
-print('medoids', medoids)
+# print('medoids', medoids)
 # print('Data: ', data)
