@@ -22,8 +22,6 @@ def k_means(dataa, k=3):
         C_dimensions[i] = random_cluster
 
     C = np.array(list(C_dimensions), dtype=np.float32)
-    print("Initial Centroids")
-    print(C)
 
     # To store the value of centroids when it updates
     C_old = np.zeros(C.shape)
@@ -43,15 +41,10 @@ def k_means(dataa, k=3):
         # Finding the new centroids by taking the average value
         for i in range(k):
             points = [X[j] for j in range(len(X)) if clusters[j] == i]
-            print('points', points, 'lenX', len(X))
-            print('shape:', C_old.shape)
-            print('Other Shape:', C.shape)
-            print('dist', C, 'and', C_old, 'acitual', dist(C, C_old, None))
-            print(C)
             C[i] = np.mean(points, axis=0)
         error = dist(C, C_old, None)
-        print(C, ' old', C_old)
-        print('Error', error)
+        # print(C, ' old', C_old)
+        # print('Error', error)
     return C
 
 
@@ -62,7 +55,7 @@ def k_means(dataa, k=3):
 # data[:, 0] = raw[:, 31]
 # data[:, 1] = raw[:, 40]
 # data[:, 2] = raw[:, 12]
-# 
+#
 #
 # print('Eigen cluster', k_means(data, 3))
 #
