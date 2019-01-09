@@ -55,20 +55,18 @@ def k_means(dataa, k=3):
     return C
 
 
-raw = toolbox_import.convertIntoArray('Data/USCensus1990.data.txt', 69, 2, 10000)
-
-data = np.empty(shape=(10000, 3))
-
-data[:, 0] = raw[:, 31]
-data[:, 1] = raw[:, 40]
-data[:, 2] = raw[:, 12]
-
-
-# print(data.shape[1])
-
-print('Eigen cluster', k_means(data, 3))
-
-kmeans = KMeans(n_clusters=3)
-kmeans.fit(data)
-
-print('Echte cluster', kmeans.cluster_centers_)
+# raw = toolbox_import.convertIntoArray('Data/USCensus1990.data.txt', 69, 2, 10000)
+#
+# data = np.empty(shape=(10000, 3))
+#
+# data[:, 0] = raw[:, 31]
+# data[:, 1] = raw[:, 40]
+# data[:, 2] = raw[:, 12]
+# 
+#
+# print('Eigen cluster', k_means(data, 3))
+#
+# kmeans = KMeans(n_clusters=3)
+# kmeans.fit(data)
+#
+# print('Echte cluster', kmeans.cluster_centers_)
