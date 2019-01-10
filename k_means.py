@@ -41,21 +41,23 @@ def k_means(dataa, k=3):
         # Finding the new centroids by taking the average value
         for i in range(k):
             points = [X[j] for j in range(len(X)) if clusters[j] == i]
-            C[i] = np.mean(points, axis=0)
+            if points:
+                C[i] = np.mean(points, axis=0)
+            else:
+                C[i] = C[i]
         error = dist(C, C_old, None)
         # print(C, ' old', C_old)
         # print('Error', error)
     return C
 
 
-# raw = toolbox_import.convertIntoArray('Data/USCensus1990.data.txt', 69, 2, 10000)
+# raw = toolbox_import.convertIntoArray('Data/USCensus1990.data.txt', 69, 2, 100)
 #
-# data = np.empty(shape=(10000, 3))
+# data = np.empty(shape=(100, 3))
 #
 # data[:, 0] = raw[:, 31]
 # data[:, 1] = raw[:, 40]
 # data[:, 2] = raw[:, 12]
-#
 #
 # print('Eigen cluster', k_means(data, 3))
 #
