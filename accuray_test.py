@@ -60,7 +60,7 @@ for i in range(number_of_loops):
     medoids_score[i] = compare_assignments(real_assignments, k_medoids())
     h_k_score[i] = compare_assignments(real_assignments, h_k_means())
 
-
+print('K: ', k)
 print('number of loops: ', number_of_loops)
 print('mean score: ', np.average(means_score), 'mean std: ', np.std(means_score))
 print('medoid score: ', np.average(medoids_score), 'medoid std: ', np.std(medoids_score))

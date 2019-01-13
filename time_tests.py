@@ -47,6 +47,8 @@ for i in range(number_of_loops):
     h_k_time[i] = h_k_means()
 
 
+print('K : ', k)
+print('number of loops: ', number_of_loops)
 print('mean time: ', np.average(means_time), 'mean std: ', np.std(means_time))
 print('medoid time: ', np.average(medoids_time), 'medoid std: ', np.std(medoids_time))
 print('h k time: ', np.average(h_k_time), 'h k std: ', np.std(h_k_time))
